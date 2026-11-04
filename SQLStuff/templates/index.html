@@ -16,7 +16,7 @@
     <nav aria-label="Main navigation">
       <a href="/login">Log In</a>
       <a class="active" href="#home">Home</a>
-      <a href="#books">Books</a>
+      <a href="/books">Books</a>
       <a href="#resources">Resources</a>
       <a href="#add-book-section">Add Book</a>
       <a href="#requests">My Account</a>
@@ -63,7 +63,7 @@
         <section class="panel" id="books">
           <div class="panel-heading">
             <h2><span class="panel-icon">▤</span> Library Books</h2>
-            <button class="text-btn" onclick="openAllBooksModal()">View All Books ({{ all_books|length }}) →</button>
+            <a class="text-btn" href="/books"> View All Books ({{ all_books|length }}) → </a>
           </div>
           <div class="book-grid" id="bookGrid">
             {% for book in featured_books %}
@@ -198,39 +198,6 @@
     </div>
   </main>
 
-  <!-- ALL BOOKS MODAL -->
-  <div id="allBooksModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Entire Library Catalog ({{ all_books|length }} Books)</h2>
-        <span class="modal-close" onclick="closeAllBooksModal()">&times;</span>
-      </div>
-      <div class="table-wrap">
-        <table class="modal-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Title</th>
-              <th>Author</th>
-              <th>Genre</th>
-              <th>Lexile</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for book in all_books %}
-            <tr>
-              <td>{{ loop.index }}</td>
-              <td><strong>{{ book.title }}</strong></td>
-              <td>{{ book.author }}</td>
-              <td><span class="genre {{ book.genre.lower() }}">{{ book.genre }}</span></td>
-              <td>{% if book.lexile %}{{ book.lexile }}L{% else %}N/A{% endif %}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 
   <footer><strong>IRON DIH INC.</strong> &nbsp; | &nbsp; SQLite Powered Library &nbsp; | &nbsp; Building a stronger community.</footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

@@ -89,7 +89,53 @@ def error(message, status=400):
 
 @app.get("/")
 def home():
-    return render_template("index.html")
+    db = connect()
+    try:
+        all_books = [
+            dict(book) for book in db.execute(
+                "SELECT * FROM library ORDER BY title"
+            ).fetchall()
+        ]
+        requests = [
+            dict(req) for req in db.execute("""
+                SELECT r.*, u.username
+                FROM requests r
+                JOIN users u ON r.user_id = u.user_id
+                ORDER BY r.request_date DESC
+            """).fetchall()
+        ]
+        resources = [
+            dict(res) for res in db.execute("""
+                SELECT cr.*, u.username AS manager
+                FROM community_resources cr
+                LEFT JOIN users u
+                ON cr.managed_by_user_id = u.user_id
+                ORDER BY cr.resource_name
+            """).fetchall()
+        ]
+    finally:
+        db.close()
+
+    return render_template(
+        "index.html",
+        all_books=all_books,
+        featured_books=all_books[:10],
+        requests=requests,
+        resources=resources
+    )
+@app.get("/books")
+def books_page():
+    db = connect()
+    try:
+        all_books = [
+            dict(book) for book in db.execute(
+                "SELECT * FROM library ORDER BY title"
+            ).fetchall()
+        ]
+    finally:
+        db.close()
+
+    return render_template("books.html", all_books=all_books)
 
 @app.get("/login")
 def login_page():

@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>All Books | Brooke Point Library</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .books-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        .books-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 24px 0;
+        }
+        .books-search {
+            padding: 12px 16px;
+            width: min(100%, 340px);
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 22px;
+        }
+        .book-card {
+            padding: 20px;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid #e5e5e5;
+            box-shadow: 0 3px 10px rgba(0,0,0,.06);
+        }
+        .book-cover {
+            height: 145px;
+            border-radius: 8px;
+            background: #e9e2d5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            margin-bottom: 16px;
+        }
+        .book-card h3 {
+            margin: 0 0 8px;
+            overflow-wrap: anywhere;
+        }
+        .book-card p {
+            margin: 6px 0;
+        }
+        .book-genre {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #f0eee8;
+            font-size: 13px;
+        }
+        .no-books {
+            padding: 28px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <main class="books-page">
+        <p><a href="{{ url_for('home') }}">← Back to Home</a></p>
+
+        <h1>Brooke Point Library</h1>
+        <h2>All Books</h2>
+        <p>Browse the books saved in the library.</p>
+
+        <div class="books-toolbar">
+            <span>{{ all_books|length }} book(s) in the library</span>
+            <input
+                class="books-search"
+                id="bookSearch"
+                type="search"
+                placeholder="Search titles, authors, or genres..."
+                aria-label="Search books"
+            >
+        </div>
+
+        <div class="books-grid" id="booksGrid">
+            {% for book in all_books %}
+            <article class="book-card"
+                     data-search="{{ (book.title or '') ~ ' ' ~ (book.author or '') ~ ' ' ~ (book.genre or '') }}">
+                <div class="book-cover" aria-hidden="true">📚</div>
+                <h3>{{ book.title or 'Untitled' }}</h3>
+                <p>By {{ book.author or 'Unknown author' }}</p>
+
+                {% if book.genre %}
+                    <span class="book-genre">{{ book.genre }}</span>
+                {% endif %}
+
+                {% if book.lexile %}
+                    <p>Lexile: {{ book.lexile }}</p>
+                {% endif %}
+            </article>
+            {% else %}
+            <p class="no-books">No books have been saved yet.</p>
+            {% endfor %}
+        </div>
+
+        <p id="noResults" hidden>No books match your search.</p>
+    </main>
+
+    <script>
+        const searchInput = document.getElementById('bookSearch');
+        const bookCards = document.querySelectorAll('.book-card');
+        const noResults = document.getElementById('noResults');
+
+        searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            bookCards.forEach(function (card) {
+                const matches = card.dataset.search.toLowerCase().includes(query);
+                card.hidden = !matches;
+                if (matches) visibleCount++;
+            });
+
+            noResults.hidden = visibleCount !== 0;
+        });
+    </script>
+</body>
+</html>
