@@ -135,7 +135,7 @@ def books_page():
     finally:
         db.close()
 
-    return render_template("books.html", all_books=all_books)
+    return render_template("book.html", all_books=all_books)
 
 @app.get("/login")
 def login_page():
@@ -252,10 +252,28 @@ def add_book():
     if not title or not author or not genre:
         return error("Title, author, and genre are required.")
 
-    if genre.lower() not in {
-        "fantasy", "mystery", "romance"
-    }:
-        return error("Use Fantasy, Mystery, or Romance.")
+  
+    allowed_genres = {
+        "fantasy",
+        "mystery",
+        "romance",
+        "science fiction",
+        "horror",
+        "thriller",
+        "historical fiction",
+        "adventure",
+        "contemporary",
+        "dystopian",
+        "nonfiction",
+        "biography",
+        "poetry",
+        "graphic novel",
+        "young adult",
+    }
+
+    if genre.lower() not in allowed_genres:
+        return error("Please select a supported book genre.")
+
 
     try:
         lexile = int(lexile) if lexile not in (None, "") else None
