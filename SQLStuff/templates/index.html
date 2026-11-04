@@ -14,6 +14,7 @@
       <span class="brand-sub">Community Library &amp; Resource Database</span>
     </a>
     <nav aria-label="Main navigation">
+      <a href="/login">Log In</a>
       <a class="active" href="#home">Home</a>
       <a href="#books">Books</a>
       <a href="#resources">Resources</a>
@@ -83,30 +84,45 @@
         </section>
 
         <!-- ADD BOOK FORM -->
-        <section class="panel" id="add-book-section">
-          <div class="panel-heading">
-            <h2><span class="panel-icon">✚</span> Add New Book to SQLite Database</h2>
-          </div>
-          <form action="/add-book" method="POST" class="add-book-form">
-            <div class="form-group">
-              <label for="title">Book Title*</label>
-              <input type="text" id="title" name="title" required placeholder="e.g. Fahrenheit 451">
-            </div>
-            <div class="form-group">
-              <label for="author">Author*</label>
-              <input type="text" id="author" name="author" required placeholder="e.g. Ray Bradbury">
-            </div>
-            <div class="form-group">
-              <label for="genre">Genre*</label>
-              <input type="text" id="genre" name="genre" required placeholder="e.g. Dystopian">
-            </div>
-            <div class="form-group">
-              <label for="lexile">Lexile Rating (Optional)</label>
-              <input type="number" id="lexile" name="lexile" placeholder="e.g. 890">
-            </div>
-            <button class="primary submit-btn" type="submit">Add Book to Database</button>
-          </form>
-        </section>
+       
+<!-- ADD BOOK FORM -->
+<section class="panel" id="add-book-section">
+  <div class="panel-heading">
+    <h2>✚ Add New Book to SQLite Database</h2>
+  </div>
+
+  <form id="addBookForm" class="add-book-form">
+    <div class="form-group">
+      <label for="title">Book Title*</label>
+      <input type="text" id="title" name="title" required>
+    </div>
+
+    <div class="form-group">
+      <label for="author">Author*</label>
+      <input type="text" id="author" name="author" required>
+    </div>
+
+    <div class="form-group">
+      <label for="genre">Genre*</label>
+      <select id="genre" name="genre" required>
+        <option value="">Select Genre</option>
+        <option value="Fantasy">Fantasy</option>
+        <option value="Mystery">Mystery</option>
+        <option value="Romance">Romance</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="lexile">Lexile Rating (Optional)</label>
+      <input type="number" id="lexile" name="lexile" min="0">
+    </div>
+
+    <button class="primary submit-btn" type="submit">
+      Add Book to Database
+    </button>
+  </form>
+</section>
+
 
         <!-- REQUESTS PANEL -->
         <section class="panel" id="requests">

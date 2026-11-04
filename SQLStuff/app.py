@@ -5,7 +5,7 @@ import sys
 from functools import wraps
 from pathlib import Path
 
-from flask import Flask, jsonify, request, session, render_template
+from flask import Flask, jsonify, request, session, render_template, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE = Path(__file__).resolve().parent
@@ -90,6 +90,12 @@ def error(message, status=400):
 @app.get("/")
 def home():
     return render_template("index.html")
+
+@app.get("/login")
+def login_page():
+    if "user_id" in session:
+        return redirect("/")
+    return render_template("login.html")
 
 
 @app.post("/api/login")

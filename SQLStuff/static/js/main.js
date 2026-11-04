@@ -76,3 +76,45 @@ window.onclick = function(event) {
     modal.style.display = 'none';
   }
 };
+
+// ADD BOOK TO SQLITE DATABASE
+document.getElementById('addBookForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const book = {
+        title: document.getElementById('title').value,
+        author: document.getElementById('author').value,
+        genre: document.getElementById('genre').value,
+        lexile: document.getElementById('lexile').value
+    };
+
+    try {
+        const response = await fetch('/api/books', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(book)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            showToast(result.error || 'Could not save book.');
+            return;
+        }
+
+        showToast('Book successfully saved to SQLite!');
+
+        document.getElementById('addBookForm').reset();
+
+        // Reload the page to display updated database records
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+
+    } catch (error) {
+        showToast('Error connecting to the server.');
+        console.error(error);
+    }
+});
