@@ -213,8 +213,8 @@ def checkout_book(book_id):
 @login_required
 def my_loans():
     return jsonify(rows("""
-        SELECT l.loan_id, l.checkout_date, l.due_date, l.returned_date, l.status,
-               b.title, b.author,
+        SELECT l.loan_id, l.checkout_date, l.due_date, l.returned_date,
+               l.return_requested_at, l.status, b.title, b.author,
                CASE WHEN l.status='active' AND date(l.due_date)<date('now')
                     THEN 1 ELSE 0 END AS overdue
         FROM loans l JOIN library b ON b.id=l.book_id
@@ -243,8 +243,8 @@ def admin_summary():
 @roles_required("admin")
 def admin_loans():
     return jsonify(rows("""
-        SELECT l.loan_id, l.checkout_date, l.due_date, l.returned_date, l.status,
-               b.title, b.author, u.username,
+        SELECT l.loan_id, l.checkout_date, l.due_date, l.returned_date,
+               l.return_requested_at, l.status, b.title, b.author, u.username,
                CASE WHEN l.status='active' AND date(l.due_date)<date('now')
                     THEN 1 ELSE 0 END AS overdue
         FROM loans l
@@ -253,6 +253,47 @@ def admin_loans():
         ORDER BY CASE WHEN l.status='active' THEN 0 ELSE 1 END,
                  l.due_date ASC
     """))
+
+
+@app.post("/api/my-loans/<int:loan_id>/request-return")
+@login_required
+def request_early_return(loan_id):
+    """Let a borrower notify staff that they are bringing a book back."""
+    db = connect()
+    try:
+        db.execute("BEGIN IMMEDIATE")
+        loan = db.execute("""
+            SELECT l.status, l.return_requested_at, b.title
+            FROM loans l JOIN library b ON b.id=l.book_id
+            WHERE l.loan_id=? AND l.user_id=?
+        """, (loan_id, session["user_id"])).fetchone()
+        if not loan:
+            db.rollback()
+            return error("Loan not found.", 404)
+        if loan["status"] != "active":
+            db.rollback()
+            return error("This book has already been returned.", 409)
+        if loan["return_requested_at"]:
+            db.rollback()
+            return error("You have already requested to return this book.", 409)
+
+        db.execute("""
+            UPDATE loans SET return_requested_at=CURRENT_TIMESTAMP
+            WHERE loan_id=? AND user_id=? AND status='active'
+              AND return_requested_at IS NULL
+        """, (loan_id, session["user_id"]))
+        db.execute("""
+            INSERT INTO notifications(notification_type, message, loan_id)
+            VALUES('return_request', ?, ?)
+        """, (f"{session['username']} requested to return “{loan['title']}”.", loan_id))
+        db.commit()
+        return jsonify(success=True, message="Return request sent to the library.")
+    except sqlite3.Error:
+        db.rollback()
+        app.logger.exception("Early return request failed")
+        return error("The return request could not be submitted.", 500)
+    finally:
+        db.close()
 
 
 @app.post("/api/admin/loans/<int:loan_id>/return")
@@ -313,6 +354,23 @@ def review_notification(notification_id):
         if cursor.rowcount == 0:
             return error("Notification not found or already reviewed.", 404)
         return jsonify(success=True)
+    finally:
+        db.close()
+
+
+@app.post("/api/admin/notifications/clear-reviewed")
+@roles_required("admin")
+def clear_reviewed_notifications():
+    """Remove reviewed notifications while preserving anything not yet reviewed."""
+    db = connect()
+    try:
+        cursor = db.execute("DELETE FROM notifications WHERE reviewed_at IS NOT NULL")
+        db.commit()
+        return jsonify(success=True, deleted=cursor.rowcount)
+    except sqlite3.Error:
+        db.rollback()
+        app.logger.exception("Clearing reviewed notifications failed")
+        return error("Reviewed notifications could not be cleared.", 500)
     finally:
         db.close()
 
