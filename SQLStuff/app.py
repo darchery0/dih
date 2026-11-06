@@ -66,8 +66,8 @@ def rows(query, params=()):
 @app.get("/")
 def home():
     books = rows("""
-        SELECT id, title, author, genre, lexile, total_copies, available_copies
-        FROM library ORDER BY title LIMIT 8
+        SELECT id, title, author, genre, lexile, call_number, total_copies, available_copies
+        FROM library WHERE COALESCE(is_active, 1)=1 ORDER BY title LIMIT 8
     """)
     return render_template("index.html", books=books)
 
@@ -75,8 +75,8 @@ def home():
 @app.get("/books")
 def books_page():
     books = rows("""
-        SELECT id, title, author, genre, lexile, total_copies, available_copies
-        FROM library ORDER BY title
+        SELECT id, title, author, genre, lexile, call_number, total_copies, available_copies
+        FROM library WHERE COALESCE(is_active, 1)=1 ORDER BY title
     """)
     return render_template("book.html", books=books)
 
@@ -143,8 +143,8 @@ def get_books():
     search = request.args.get("search", "").strip()
     genre = request.args.get("genre", "").strip()
     sql = """
-        SELECT id, title, author, genre, lexile, total_copies, available_copies
-        FROM library WHERE 1=1
+        SELECT id, title, author, genre, lexile, call_number, total_copies, available_copies
+        FROM library WHERE COALESCE(is_active, 1)=1
     """
     params = []
     if search:
@@ -165,9 +165,9 @@ def checkout_book(book_id):
         # Serialize competing checkout attempts so inventory cannot go negative.
         db.execute("BEGIN IMMEDIATE")
         book = db.execute(
-            "SELECT title, available_copies FROM library WHERE id=?", (book_id,)
+            "SELECT title, available_copies, is_active FROM library WHERE id=?", (book_id,)
         ).fetchone()
-        if not book:
+        if not book or not book["is_active"]:
             db.rollback()
             return error("Book not found.", 404)
         if book["available_copies"] < 1:
@@ -228,9 +228,9 @@ def my_loans():
 @roles_required("admin")
 def admin_summary():
     result = {
-        "titles": rows("SELECT COUNT(*) AS n FROM library")[0]["n"],
-        "copies": rows("SELECT COALESCE(SUM(total_copies),0) AS n FROM library")[0]["n"],
-        "available": rows("SELECT COALESCE(SUM(available_copies),0) AS n FROM library")[0]["n"],
+        "titles": rows("SELECT COUNT(*) AS n FROM library WHERE COALESCE(is_active, 1)=1")[0]["n"],
+        "copies": rows("SELECT COALESCE(SUM(total_copies),0) AS n FROM library WHERE COALESCE(is_active, 1)=1")[0]["n"],
+        "available": rows("SELECT COALESCE(SUM(available_copies),0) AS n FROM library WHERE COALESCE(is_active, 1)=1")[0]["n"],
         "active": rows("SELECT COUNT(*) AS n FROM loans WHERE status='active'")[0]["n"],
         "overdue": rows("SELECT COUNT(*) AS n FROM loans WHERE status='active' AND date(due_date)<date('now')")[0]["n"],
         "unreviewed": rows("SELECT COUNT(*) AS n FROM notifications WHERE reviewed_at IS NULL")[0]["n"],
@@ -394,8 +394,8 @@ def admin_add_book():
     db = connect()
     try:
         cursor = db.execute("""
-            INSERT INTO library(title, author, genre, lexile, total_copies, available_copies)
-            VALUES(?,?,?,?,?,?)
+            INSERT INTO library(title, author, genre, lexile, total_copies, available_copies, is_active)
+            VALUES(?,?,?,?,?,?,1)
         """, (title, author, genre, lexile, copies, copies))
         db.commit()
         return jsonify(id=cursor.lastrowid), 201
