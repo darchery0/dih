@@ -1,10 +1,23 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Books · Brooke Point Library</title><link rel="stylesheet" href="/static/css/style.css"></head>
 <body><header class="top"><strong>Brooke Point Library</strong><nav><a href="/">Home</a><a href="/books">Books</a><a href="/my-account">My Account</a><a href="/login">Login</a></nav></header>
-<main class="wrap"><h1>Book Catalog</h1><p class="muted">Browse titles and see how many copies are available.</p><input id="search" placeholder="Search title or author"><select id="genre"><option value="">All genres</option>{% for genre in books|map(attribute='genre')|unique|sort %}<option>{{ genre }}</option>{% endfor %}</select><section class="grid" id="catalog">{% for book in books %}<article class="book" data-search="{{ (book.title ~ ' ' ~ book.author)|lower }}" data-genre="{{ book.genre }}"><h3>{{ book.title }}</h3><p>by {{ book.author }}</p><p class="muted">{{ book.genre }}{% if book.lexile %} · Lexile {{ book.lexile }}{% endif %}</p><p><strong>{{ book.available_copies }}</strong> / {{ book.total_copies }} copies available</p>{% if book.available_copies > 0 %}<button onclick="checkout({{ book.id }}, this)">Check Out</button>{% else %}<button disabled>Unavailable</button>{% endif %}</article>{% else %}<p>No books in the catalog yet.</p>{% endfor %}</section><p id="message" role="status"></p></main>
+<main class="wrap"><h1>Book Catalog</h1><p class="muted">Browse titles and see how many copies are available.</p><input id="search" placeholder="Search title or author"><select id="genre">
+    <option value="">All genres</option>
+    {% for g in books|map(attribute='genre')|unique|sort %}
+        {% if g %}
+        <option value="{{ g }}" {% if g == selected_genre %}selected{% endif %}>
+            {{ g }}
+        </option>
+        {% endif %}
+    {% endfor %}
+</select>{% for genre in books|map(attribute='genre')|unique|sort %}<option>{{ genre }}</option>{% endfor %}</select><section class="grid" id="catalog">{% for book in books %}<article class="book" data-search="{{ (book.title ~ ' ' ~ book.author)|lower }}" data-genre="{{ book.genre }}"><h3>{{ book.title }}</h3><p>by {{ book.author }}</p><p class="muted">{{ book.genre }}{% if book.lexile %} · Lexile {{ book.lexile }}{% endif %}</p><p><strong>{{ book.available_copies }}</strong> / {{ book.total_copies }} copies available</p>{% if book.available_copies > 0 %}<button onclick="checkout({{ book.id }}, this)">Check Out</button>{% else %}<button disabled>Unavailable</button>{% endif %}</article>{% else %}<p>No books in the catalog yet.</p>{% endfor %}</section><p id="message" role="status"></p></main>
 <script>
 const search=document.getElementById('search'), genre=document.getElementById('genre');
 function filter(){const q=search.value.toLowerCase(),g=genre.value;document.querySelectorAll('.book').forEach(c=>c.hidden=!(c.dataset.search.includes(q)&&(!g||c.dataset.genre===g)));}
-search.addEventListener('input',filter);genre.addEventListener('change',filter);
+search.addEventListener('input', filter);
+genre.addEventListener('change', filter);
+
+// Apply a genre selected from a homepage link.
+filter();
 async function checkout(id,button){button.disabled=true;const m=document.getElementById('message');try{const r=await fetch(`/api/books/${id}/checkout`,{method:'POST'});const d=await r.json();if(r.status===401){location.href='/login';return;}if(!r.ok)throw Error(d.error||'Checkout failed');m.className='success';m.textContent=`Checked out! Your book is due ${d.due_date}.`;button.textContent='Checked out';}catch(e){m.className='error';m.textContent=e.message;button.disabled=false;}}
 </script></body></html>

@@ -1,5 +1,82 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Brooke Point Library</title><link rel="stylesheet" href="/static/css/style.css"></head>
-<body><header class="top"><strong>Brooke Point Library</strong><nav><a href="/">Home</a><a href="/books">Books</a><a href="/login">Login</a><a href="/my-account">My Account</a></nav></header>
-<main class="wrap"><section class="hero"><p class="muted">YOUR COMMUNITY BOOK COLLECTION</p><h1>Find your next great read.</h1><p>Browse the catalog, check availability, and borrow books with your library account.</p><a class="btn" href="/books">Explore the catalog</a></section>
-<h2>Featured books</h2><section class="grid">{% for book in books %}<article class="book"><h3>{{ book.title }}</h3><p>by {{ book.author }}</p><p class="muted">{{ book.genre }}{% if book.lexile %} · Lexile {{ book.lexile }}{% endif %}</p><p>{{ book.available_copies }} of {{ book.total_copies }} available</p><a class="btn secondary" href="/books">View catalog</a></article>{% else %}<p>No books have been added yet.</p>{% endfor %}</section></main><footer>Brooke Point Library</footer></body></html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Brooke Point Library</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<header class="top">
+    <strong>Brooke Point Library</strong>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/books">Books</a>
+        <a href="/login">Login</a>
+        <a href="/my-account">My Account</a>
+    </nav>
+</header>
+
+<main class="wrap">
+    <section class="hero">
+        <p class="muted">YOUR COMMUNITY BOOK COLLECTION</p>
+        <h1>Find your next great read.</h1>
+        <p>Browse the catalog, check availability, and borrow books with your library account.</p>
+        <a class="btn" href="/books">Explore the catalog</a>
+    </section>
+
+    <section class="genre-section">
+        <div class="genre-heading">
+            <h2>Featured Books</h2>
+            <a href="/books">View all →</a>
+        </div>
+
+        <section class="grid">
+            {% for book in books %}
+            <article class="book">
+                <h3>{{ book.title }}</h3>
+                <p>by {{ book.author }}</p>
+                <p class="muted">
+                    {{ book.genre }}
+                    {% if book.lexile %} · Lexile {{ book.lexile }}{% endif %}
+                </p>
+                <p>{{ book.available_copies }} of {{ book.total_copies }} available</p>
+                <a class="btn secondary" href="/books">View catalog</a>
+            </article>
+            {% else %}
+            <p>No books have been added yet.</p>
+            {% endfor %}
+        </section>
+    </section>
+
+    {% for section in genre_sections %}
+    <section class="genre-section">
+        <div class="genre-heading">
+            <h2>{{ section.name }}</h2>
+            <a href="/books?genre={{ section.name|urlencode }}">View all →</a>
+        </div>
+
+        <div class="genre-row">
+            {% for book in section.books %}
+            <article class="book genre-card">
+                <h3>{{ book.title }}</h3>
+                <p>by {{ book.author }}</p>
+                <p class="muted">
+                    {{ book.genre }}
+                    {% if book.lexile %} · Lexile {{ book.lexile }}{% endif %}
+                </p>
+                <p>{{ book.available_copies }} of {{ book.total_copies }} available</p>
+                <a class="btn secondary"
+                   href="/books?genre={{ section.name|urlencode }}">
+                    Browse genre
+                </a>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+</main>
+
+<footer>Brooke Point Library</footer>
+</body>
+</html>

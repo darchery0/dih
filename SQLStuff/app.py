@@ -65,20 +65,53 @@ def rows(query, params=()):
 
 @app.get("/")
 def home():
-    books = rows("""
-        SELECT id, title, author, genre, lexile, call_number, total_copies, available_copies
-        FROM library WHERE COALESCE(is_active, 1)=1 ORDER BY title LIMIT 8
+    all_books = rows("""
+        SELECT id, title, author, genre, lexile, call_number,
+               total_copies, available_copies
+        FROM library
+        WHERE COALESCE(is_active, 1)=1
+        ORDER BY title
     """)
-    return render_template("index.html", books=books)
+
+    # Keep the first 8 books as Featured Books.
+    books = all_books[:8]
+
+    # Group active books by genre.
+    grouped = {}
+    for book in all_books:
+        genre = (book["genre"] or "").strip()
+        if genre:
+            grouped.setdefault(genre, []).append(book)
+
+    genre_sections = [
+        {"name": genre, "books": genre_books[:5]}
+        for genre, genre_books in sorted(grouped.items())
+    ]
+
+    return render_template(
+        "index.html",
+        books=books,
+        genre_sections=genre_sections
+    )
 
 
 @app.get("/books")
 def books_page():
     books = rows("""
-        SELECT id, title, author, genre, lexile, call_number, total_copies, available_copies
-        FROM library WHERE COALESCE(is_active, 1)=1 ORDER BY title
+        SELECT id, title, author, genre, lexile, call_number,
+               total_copies, available_copies
+        FROM library
+        WHERE COALESCE(is_active, 1)=1
+        ORDER BY title
     """)
-    return render_template("book.html", books=books)
+
+    selected_genre = request.args.get("genre", "").strip()
+
+    return render_template(
+        "book.html",
+        books=books,
+        selected_genre=selected_genre
+    )
 
 
 @app.get("/login")

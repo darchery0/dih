@@ -1,1 +1,37 @@
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#182334}a{color:#245b9e;text-decoration:none}.top{background:#183b63;color:#fff;padding:18px max(5%,calc((100% - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:20px}.top a{color:#fff;margin-left:18px}.wrap{max-width:1100px;margin:35px auto;padding:0 20px}.hero,.panel,.book,.stat{background:#fff;border:1px solid #dce4ee;border-radius:14px;padding:22px;margin-bottom:18px}.hero{padding:38px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.book h3{margin-top:0}.muted{color:#64748b}.btn,button{display:inline-block;border:0;border-radius:8px;background:#245b9e;color:#fff;padding:10px 15px;cursor:pointer;font-size:14px}.btn.secondary,button.secondary{background:#e6edf6;color:#183b63}button:disabled{opacity:.5;cursor:not-allowed}input,select{padding:11px;border:1px solid #cbd5e1;border-radius:8px;margin:5px 5px 5px 0;max-width:100%}table{width:100%;border-collapse:collapse;background:white}th,td{text-align:left;padding:11px;border-bottom:1px solid #e2e8f0}th{background:#edf2f8}.stat strong{font-size:28px;display:block}.notice{padding:12px;background:#fff8df;border:1px solid #f1d58a;border-radius:8px;margin:8px 0}.success{color:#187245}.error{color:#b42318}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>*{flex:1}h1,h2{color:#183b63}footer{text-align:center;color:#718096;padding:30px}@media(max-width:650px){.top{display:block}.top nav{margin-top:12px}.top a{margin:0 12px 0 0}table{font-size:13px}}
+.genre-section {
+    margin-top: 35px;
+}
+
+.genre-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+
+.genre-heading h2 {
+    margin: 0;
+}
+
+.genre-heading a {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.genre-row {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 4px 2px 16px;
+}
+
+.genre-card {
+    flex: 0 0 240px;
+    margin-bottom: 0;
+}
+
+.genre-card h3 {
+    overflow-wrap: anywhere;
+}
