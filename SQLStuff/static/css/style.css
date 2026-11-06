@@ -35,3 +35,31 @@
 .genre-card h3 {
     overflow-wrap: anywhere;
 }
+
+.genre-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0 25px;
+}
+
+.genre-filter {
+    background: #ffffff;
+    color: #183b63;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 9px 17px;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+.genre-filter:hover {
+    background: #e6edf6;
+    border-color: #245b9e;
+}
+
+.genre-filter.active {
+    background: #245b9e;
+    color: #ffffff;
+    border-color: #245b9e;
+}
