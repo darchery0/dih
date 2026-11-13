@@ -35,6 +35,16 @@ public class LegacyUser {
         setUserRole(userRole);
     }
 
+    // Constructor for database records without password hash
+public LegacyUser(int userId, String username,
+                  String email, String userRole) {
+
+    setUserId(userId);
+    setUsername(username);
+    setEmail(email);
+    setUserRole(userRole);
+}
+
     // Getters
     public int getUserId() {
         return userId;

@@ -1,7 +1,18 @@
 
+import java.util.ArrayList;
+
 public class Main {
 
     public static void main(String[] args) {
+
+        // Lesson 3: Retrieve database records as Java objects
+        System.out.println("=== USERS FROM DATABASE ===");
+
+        ArrayList<LegacyUser> users = UserDAO.getAllUsers();
+
+        for (LegacyUser user : users) {
+            System.out.println(user);
+        }
 
         // Scenario A: Existing database user
         LegacyUser existingUser = new LegacyUser(
