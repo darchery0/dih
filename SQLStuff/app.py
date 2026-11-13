@@ -114,6 +114,25 @@ def books_page():
     )
 
 
+@app.get("/book/<int:book_id>")
+def book_overview(book_id):
+    book_results = rows("""
+        SELECT id, title, author, genre, lexile, call_number,
+               total_copies, available_copies, summary
+        FROM library
+        WHERE id=? AND COALESCE(is_active, 1)=1
+    """, (book_id,))
+
+    if not book_results:
+        return "Book not found.", 404
+
+    return render_template(
+        "book_overview.html",
+        book=book_results[0]
+    )
+
+
+
 @app.get("/login")
 def login_page():
     if session.get("user_id"):
@@ -415,6 +434,7 @@ def admin_add_book():
     title = str(data.get("title", "")).strip()
     author = str(data.get("author", "")).strip()
     genre = str(data.get("genre", "")).strip()
+    summary = str(data.get("summary", "")).strip()
     try:
         copies = int(data.get("total_copies", 1))
         lexile = int(data["lexile"]) if data.get("lexile") not in (None, "") else None
@@ -427,9 +447,12 @@ def admin_add_book():
     db = connect()
     try:
         cursor = db.execute("""
-            INSERT INTO library(title, author, genre, lexile, total_copies, available_copies, is_active)
-            VALUES(?,?,?,?,?,?,1)
-        """, (title, author, genre, lexile, copies, copies))
+    INSERT INTO library(
+        title, author, genre, lexile, total_copies,
+        available_copies, is_active, summary
+    )
+    VALUES(?,?,?,?,?,?,1,?)
+""", (title, author, genre, lexile, copies, copies, summary))
         db.commit()
         return jsonify(id=cursor.lastrowid), 201
     except sqlite3.Error:
@@ -455,8 +478,9 @@ def admin_edit_book(book_id):
     db = connect()
     try:
         book = db.execute(
-            "SELECT available_copies FROM library WHERE id=?", (book_id,)
-        ).fetchone()
+    "SELECT available_copies, summary FROM library WHERE id=?",
+    (book_id,)
+).fetchone()
         if not book:
             return error("Book not found.", 404)
         checked_out = db.execute(
@@ -466,10 +490,13 @@ def admin_edit_book(book_id):
         if total < checked_out:
             return error(f"At least {checked_out} copies are currently checked out.")
         available = total - checked_out
+        summary = str(data.get("summary", book["summary"] or "")).strip()
         db.execute("""
-            UPDATE library SET title=?, author=?, genre=?, total_copies=?,
-                available_copies=? WHERE id=?
-        """, (title, author, genre, total, available, book_id))
+    UPDATE library SET
+        title=?, author=?, genre=?, total_copies=?,
+        available_copies=?, summary=?
+    WHERE id=?
+""", (title, author, genre, total, available, summary, book_id))
         db.commit()
         return jsonify(success=True)
     finally:

@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -41,7 +42,9 @@
                     {% if book.lexile %} · Lexile {{ book.lexile }}{% endif %}
                 </p>
                 <p>{{ book.available_copies }} of {{ book.total_copies }} available</p>
-                <a class="btn secondary" href="/books">View catalog</a>
+                <a class="btn secondary" href="/book/{{ book.id }}">
+                    View Details
+                </a>
             </article>
             {% else %}
             <p>No books have been added yet.</p>
@@ -66,9 +69,8 @@
                     {% if book.lexile %} · Lexile {{ book.lexile }}{% endif %}
                 </p>
                 <p>{{ book.available_copies }} of {{ book.total_copies }} available</p>
-                <a class="btn secondary"
-                   href="/books?genre={{ section.name|urlencode }}">
-                    Browse genre
+                <a class="btn secondary" href="/book/{{ book.id }}">
+                    View Details
                 </a>
             </article>
             {% endfor %}

@@ -1,28 +1,94 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Books · Brooke Point Library</title><link rel="stylesheet" href="/static/css/style.css"></head>
-<body><header class="top"><strong>Brooke Point Library</strong><nav><a href="/">Home</a><a href="/books">Books</a><a href="/my-account">My Account</a><a href="/login">Login</a></nav></header>
-<main class="wrap"><h1>Book Catalog</h1><p class="muted">Browse titles and see how many copies are available.</p><input id="search" placeholder="Search title or author"><select id="genre">
-    <div class="genre-filters" id="genreFilters">
-    <button type="button"
-            class="genre-filter"
-            data-genre="">
-        All Genres
-    </button>
 
-    {% for g in books|map(attribute='genre')|unique|sort %}
-        {% if g %}
-        <button type="button"
-                class="genre-filter"
-                data-genre="{{ g }}">
-            {{ g }}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Books · Brooke Point Library</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+<header class="top">
+    <strong>Brooke Point Library</strong>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/books">Books</a>
+        <a href="/my-account">My Account</a>
+        <a href="/login">Login</a>
+    </nav>
+</header>
+
+<main class="wrap">
+
+    <h1>Book Catalog</h1>
+    <p class="muted">Browse titles and see how many copies are available.</p>
+
+    <input
+        id="search"
+        type="text"
+        placeholder="Search title or author"
+    >
+
+    <h3>Filter by genre</h3>
+
+    <div class="genre-filters" id="genreFilters">
+
+        <button type="button" class="genre-filter" data-genre="">
+            All Genres
         </button>
-        {% endif %}
-    {% endfor %}
-</div>
-</select>{% for genre in books|map(attribute='genre')|unique|sort %}<option>{{ genre }}</option>{% endfor %}</select><section class="grid" id="catalog">{% for book in books %}<article class="book" data-search="{{ (book.title ~ ' ' ~ book.author)|lower }}" data-genre="{{ book.genre }}"><h3>{{ book.title }}</h3><p>by {{ book.author }}</p><p class="muted">{{ book.genre }}{% if book.lexile %} · Lexile {{ book.lexile }}{% endif %}</p><p><strong>{{ book.available_copies }}</strong> / {{ book.total_copies }} copies available</p>{% if book.available_copies > 0 %}<button onclick="checkout({{ book.id }}, this)">Check Out</button>{% else %}<button disabled>Unavailable</button>{% endif %}</article>{% else %}<p>No books in the catalog yet.</p>{% endfor %}</section><p id="message" role="status"></p></main>
+
+        {% for g in books|map(attribute='genre')|unique|sort %}
+            {% if g %}
+            <button type="button" class="genre-filter" data-genre="{{ g }}">
+                {{ g }}
+            </button>
+            {% endif %}
+        {% endfor %}
+
+    </div>
+
+    <section class="grid" id="catalog">
+
+        {% for book in books %}
+
+        <a
+            class="book book-link"
+            href="/book/{{ book.id }}"
+            data-search="{{ (book.title ~ ' ' ~ book.author)|lower }}"
+            data-genre="{{ book.genre }}"
+            aria-label="View {{ book.title }} overview">
+
+            <h3>{{ book.title }}</h3>
+
+            <p>by {{ book.author }}</p>
+
+            <p class="muted">
+                {{ book.genre }}
+                {% if book.lexile %}
+                    · Lexile {{ book.lexile }}
+                {% endif %}
+            </p>
+
+            <p>
+                <strong>{{ book.available_copies }}</strong>
+                / {{ book.total_copies }} copies available
+            </p>
+
+            <p class="muted">View book details →</p>
+
+        </a>
+
+        {% else %}
+            <p>No books in the catalog yet.</p>
+        {% endfor %}
+
+    </section>
+
+</main>
+
 <script>
 const search = document.getElementById('search');
-const genreFilters = document.getElementById('genreFilters');
 const genreButtons = document.querySelectorAll('.genre-filter');
 
 let selectedGenre = {{ selected_genre|tojson }};
@@ -55,4 +121,7 @@ genreButtons.forEach(button => {
 search.addEventListener('input', filter);
 
 filter();
-</script></body></html>
+</script>
+
+</body>
+</html>
