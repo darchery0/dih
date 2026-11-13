@@ -1,0 +1,145 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ book.title }} · Brooke Point Library</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+<header class="top">
+    <strong>Brooke Point Library</strong>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/books">Books</a>
+        <a href="/my-account">My Account</a>
+        <a href="/login">Login</a>
+    </nav>
+</header>
+
+<main class="wrap">
+
+    <a href="/books" class="back-link">← Back to catalog</a>
+
+    <section class="overview-layout">
+
+        <div class="overview-cover">
+            <div class="cover-placeholder">
+                <span>{{ book.title }}</span>
+                <small>{{ book.author }}</small>
+            </div>
+        </div>
+
+        <div class="overview-info">
+
+            <p class="muted">BROOKE POINT LIBRARY</p>
+
+            <h1>{{ book.title }}</h1>
+
+            <p class="overview-author">by {{ book.author }}</p>
+
+            <div class="overview-genres">
+                <span>{{ book.genre }}</span>
+                {% if book.lexile %}
+                    <span>Lexile {{ book.lexile }}</span>
+                {% endif %}
+            </div>
+
+            <p class="overview-availability">
+                {% if book.available_copies > 0 %}
+                    <span class="availability-dot"></span>
+                    {{ book.available_copies }} of {{ book.total_copies }} copies available
+                {% else %}
+                    <span class="unavailable-dot"></span>
+                    Currently unavailable
+                {% endif %}
+            </p>
+
+            {% if book.available_copies > 0 %}
+                <button id="checkoutButton" onclick="checkoutBook()">
+                    Check Out
+                </button>
+            {% else %}
+                <button disabled>Unavailable</button>
+            {% endif %}
+
+            <p id="checkoutMessage" role="status"></p>
+
+        </div>
+
+    </section>
+
+    <section class="overview-description">
+        <h2>About this book</h2>
+
+        {% if book.summary %}
+            <p>{{ book.summary }}</p>
+        {% else %}
+            <p class="muted">
+                A summary for this book has not been added yet.
+            </p>
+        {% endif %}
+    </section>
+
+    <section class="overview-details">
+        <h2>Book details</h2>
+
+        <p><strong>Title:</strong> {{ book.title }}</p>
+        <p><strong>Author:</strong> {{ book.author }}</p>
+        <p><strong>Genre:</strong> {{ book.genre }}</p>
+
+        {% if book.lexile %}
+            <p><strong>Lexile:</strong> {{ book.lexile }}</p>
+        {% endif %}
+
+        {% if book.call_number %}
+            <p><strong>Call Number:</strong> {{ book.call_number }}</p>
+        {% endif %}
+
+    </section>
+
+</main>
+
+<script>
+async function checkoutBook() {
+    const button = document.getElementById("checkoutButton");
+    const message = document.getElementById("checkoutMessage");
+
+    button.disabled = true;
+    message.textContent = "Processing checkout...";
+
+    try {
+        const response = await fetch(
+            "/api/books/{{ book.id }}/checkout",
+            { method: "POST" }
+        );
+
+        const data = await response.json();
+
+        if (response.status === 401) {
+            location.href = "/login";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(data.error || "Checkout failed.");
+        }
+
+        message.className = "success";
+        message.textContent =
+            `Checked out successfully! Your book is due ${data.due_date}.`;
+
+        button.textContent = "Checked Out";
+
+    } catch (error) {
+        message.className = "error";
+        message.textContent = error.message;
+        button.disabled = false;
+    }
+}
+</script>
+
+</body>
+</html>
